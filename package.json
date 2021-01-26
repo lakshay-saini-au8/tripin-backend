@@ -1,8 +1,8 @@
 {
-  "name": "multi-user-emarket",
+  "name": "tripin",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon app"
   },

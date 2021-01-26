@@ -25,10 +25,32 @@ module.exports = {
   },
   getUserBooking: async (req, res) => {
     try {
-      const data = await Booking.find({ userId: req.user._id }).populate(
-        "userId",
-        "name"
-      );
+      let data;
+      if (req.user.role === "user") {
+        data = await Booking.find({ userId: req.user._id }).populate(
+          "userId",
+          "name"
+        );
+      } else {
+        if (req.query.q === "active") {
+          data = await Booking.find({
+            bookingDate: { $gte: new Date() },
+          })
+            .populate("userId", "name")
+            .sort("-createdAt");
+        } else if (req.query.q === "completed") {
+          data = await Booking.find({
+            bookingDate: { $lte: new Date() },
+          })
+            .populate("userId", "name")
+            .sort("-createdAt");
+        } else {
+          data = await Booking.find()
+            .populate("userId", "name")
+            .sort("-createdAt");
+        }
+      }
+
       res.status(200).json({
         bookings: data,
       });
@@ -38,21 +60,51 @@ module.exports = {
       });
     }
   },
-  deleteUser: async (req, res) => {
-    const userId = req.params.userId;
+  acceptBooking: async (req, res) => {
+    const bookingId = req.body.id;
+    const q = req.body.q;
     try {
-      const user = await User.findOne({ _id: userId });
-      if (!user) return res.status(406).json({ message: "User not exist" });
-      await user.remove();
+      const booking = await Booking.findOne({ _id: bookingId });
+      if (!booking) return res.status(406).json({ message: "User not exist" });
+      if (q === "accept") {
+        booking.isAccepted = true;
+      } else {
+        booking.isAccepted = false;
+      }
+      booking.save();
 
-      return res.status(200).json({
-        status: "success",
-        result: "User deleted Successfully",
+      return res.status(200).json({ booking });
+    } catch (error) {
+      res.status(500).json({
+        message: error.message,
+      });
+    }
+  },
+  getFilterBooking: async (req, res) => {
+    const { name, date } = req.body;
+    try {
+      let data;
+      if (req.body.name && req.body.date) {
+        data = await Booking.find({
+          hotelName: name,
+          bookingDate: new Date(date),
+        }).populate("userId", "name");
+      } else if (name) {
+        data = await Booking.find({
+          hotelName: name,
+        }).populate("userId", "name");
+      } else if (date) {
+        data = await Booking.find({
+          bookingDate: new Date(date),
+        }).populate("userId", "name");
+      }
+
+      res.status(200).json({
+        bookings: data,
       });
     } catch (error) {
       res.status(500).json({
-        status: "error",
-        result: error.message,
+        message: error.message,
       });
     }
   },
