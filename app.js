@@ -11,7 +11,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 // env config
-dotenv.config({ path: __dirname + "/config/config.env" });
+dotenv.config();
 // database connection
 connectDB();
 // // enables cors
