@@ -1,6 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const morgan = require("morgan");
+// const morgan = require("morgan");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const UserRoute = require("./routes/User.routes");
@@ -23,7 +23,7 @@ app.use(
   })
 );
 // logger
-app.use(morgan("dev"));
+// app.use(morgan("dev"));
 
 // url Check
 app.get("/", (req, res) => {
